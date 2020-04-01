@@ -145,20 +145,20 @@ class Muruca_Core_V2_Slider
 
         $slide_obj = [];
         foreach ($slides as $slide){
-            $s = ["items" => []];
+            $s = ['items' => []];
             $pre_title = get_field(MURUCA_CORE_PREFIX . "_slide_pretitle", $slide->ID);
             $subtitle = get_field(MURUCA_CORE_PREFIX . "_slide_subtitle", $slide->ID);
 
             if ($pre_title && $pre_title != ""){
-                $s["items"][] = ["text" => $pre_title];
+                $s['items'][] = ["text" => $pre_title];
             }
-            $s["items"][]= ["title" => $slide->post_title];
+            $s['items'][]= ["title" => $slide->post_title];
 
             if ($subtitle && $subtitle != ""){
-                $s["items"][] = ["text" => $subtitle];
+                $s['items'][] = ["text" => $subtitle];
             }
 
-            $s["items"][] = ["text" => $slide->post_content];
+            $s['items'][] = ["text" => $slide->post_content];
 
             $type = get_field(MURUCA_CORE_PREFIX . "_slide_type", $slide->ID);
 
@@ -183,7 +183,7 @@ class Muruca_Core_V2_Slider
                         "value" => get_sub_field(MURUCA_CORE_PREFIX  .  '_slide_value')
                     ];
                 }
-                $s[]["metadata"] = $meta;
+                $s['items'][] = ["metadata" => $meta] ;
             }
             $slide_obj[] = $s;
         }
