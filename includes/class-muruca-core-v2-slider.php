@@ -120,7 +120,7 @@ class Muruca_Core_V2_Slider
     {
         global $current_screen;
         if ($this->slide_post_type == $current_screen->post_type) {
-            $args['toolbar1'] = "bold,italic,alignleft,aligncenter,alignright,link";
+            $args['toolbar1'] = "bold,italic,link";
             $args['toolbar2'] = "";
         }
         return $args;
@@ -145,19 +145,32 @@ class Muruca_Core_V2_Slider
 
         $slide_obj = [];
         foreach ($slides as $slide){
-            $s = [
-                ["title" => $slide->post_title],
-                ["text" => $slide->post_content]
-            ];
+            $s = ["items" => []];
+            $pre_title = get_field(MURUCA_CORE_PREFIX . "_slide_pretitle", $slide->ID);
+            $subtitle = get_field(MURUCA_CORE_PREFIX . "_slide_subtitle", $slide->ID);
+
+            if ($pre_title && $pre_title != ""){
+                $s["items"][] = ["text" => $pre_title];
+            }
+            $s["items"][]= ["title" => $slide->post_title];
+
+            if ($subtitle && $subtitle != ""){
+                $s["items"][] = ["text" => $subtitle];
+            }
+
+            $s["items"][] = ["text" => $slide->post_content];
 
             $type = get_field(MURUCA_CORE_PREFIX . "_slide_type", $slide->ID);
 
             if( $type == "upload") {
-                $s[]['background']['image'] = get_field(MURUCA_CORE_PREFIX . "_slide_image", $slide->ID);
+                $s['background']['image'] = get_field(MURUCA_CORE_PREFIX . "_slide_image", $slide->ID);
             } elseif ($type == "url") {
-                $s[]['background']['image'] = get_field(MURUCA_CORE_PREFIX . "_slide_image_url", $slide->ID);
+                $s['background']['image'] = get_field(MURUCA_CORE_PREFIX . "_slide_image_url", $slide->ID);
             } elseif ($type == "video") {
-                $s[]['background']['video'] = get_field(MURUCA_CORE_PREFIX . "_slide_video", $slide->ID);
+                $s['background']['video'] = get_field(MURUCA_CORE_PREFIX . "_slide_video", $slide->ID);
+            } elseif ($type == "none") {
+                $color =get_field(MURUCA_CORE_PREFIX . "_slide_bg_color", $slide->ID);
+                if( $color ) $s['background']['color'] = get_field(MURUCA_CORE_PREFIX . "_slide_bg_color", $slide->ID);
             }
 
             if( have_rows( MURUCA_CORE_PREFIX  .  '_slide_metadata', $slide->ID ) ){
@@ -170,7 +183,7 @@ class Muruca_Core_V2_Slider
                         "value" => get_sub_field(MURUCA_CORE_PREFIX  .  '_slide_value')
                     ];
                 }
-                $s[]["metadata"] =$meta;
+                $s[]["metadata"] = $meta;
             }
             $slide_obj[] = $s;
         }
@@ -194,6 +207,7 @@ class Muruca_Core_V2_Slider
                             'width' => '30',
                         ),
                         'choices' => array(
+                            'none' => 'no Image',
                             'upload' => 'Upload image',
                             'url' => 'image url',
                             'video' => 'image video',
@@ -259,6 +273,24 @@ class Muruca_Core_V2_Slider
                         ),
                     ),
                     array(
+                        'key' => self::ACF_PREFIX . 'slide_bg_color',
+                        'label' => '',
+                        'name' => MURUCA_CORE_PREFIX  .  '_slide_bg_color',
+                        'type' => 'color_picker',
+                        'conditional_logic' => array(
+                            array(
+                                array(
+                                    'field' => self::ACF_PREFIX . 'slide_type',
+                                    'operator' => '==',
+                                    'value' => 'none',
+                                ),
+                            ),
+                        ),
+                        'wrapper' => array(
+                            'width' => '50',
+                        ),
+                    ),
+                    array(
                         'key' => self::ACF_PREFIX . 'slide_action_label',
                         'label' => 'action label',
                         'name' => MURUCA_CORE_PREFIX  .  '_slide_action_label',
@@ -314,6 +346,42 @@ class Muruca_Core_V2_Slider
                 ),
                 'menu_order' => 0,
                 'position' => 'normal',
+                'style' => 'default',
+                'label_placement' => 'top',
+                'instruction_placement' => 'label',
+                'hide_on_screen' => '',
+                'active' => true,
+                'description' => '',
+            ));
+
+            acf_add_local_field_group(array(
+                'key' => 'group_mrc_slider_titles',
+                'title' => 'Muruca slider',
+                'fields' => array(
+                    array(
+                        'key' => self::ACF_PREFIX . 'slide_pretitle',
+                        'label' => 'pre-title text',
+                        'name' => MURUCA_CORE_PREFIX  .  '_slide_pretitle',
+                        'type' => 'text'
+                    ),
+                    array(
+                        'key' => self::ACF_PREFIX . 'slide_subtitle',
+                        'label' => 'subtitle text',
+                        'name' => MURUCA_CORE_PREFIX  .  '_slide_subtitle',
+                        'type' => 'text'
+                    ),
+                ),
+                'location' => array(
+                    array(
+                        array(
+                            'param' => 'post_type',
+                            'operator' => '==',
+                            'value' => $this->slide_post_type,
+                        ),
+                    ),
+                ),
+                'menu_order' => 0,
+                'position' => 'acf_after_title',
                 'style' => 'default',
                 'label_placement' => 'top',
                 'instruction_placement' => 'label',
